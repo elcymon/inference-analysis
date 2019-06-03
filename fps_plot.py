@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 
 #import pathlib
 import os
+import ntpath
+
 fpath = ['..','darknet','videos'] # folder path to csv file
 fname = '20190111GOPR9027qtr-yolov3-tiny-litter_10000-th0p1-nms1p0.csv' # name of csv file
 
@@ -37,4 +39,21 @@ def fps_plot(fpathList,fname,platform='unknown'):
     meanSTD.loc['Standard Deviation',summaryCols] = df[summaryCols].std()
     f.savefig(resultName + '.pdf',bbox_inches='tight')
     meanSTD.to_csv(resultName + '.csv')
-    return df,meanSTD
+#    return df,meanSTD
+# fpath_fname_platform = [[['..','darknet','videos','20190529-elite8470p'],[csvlist],elite8470p]]
+def get_basenames(pathlist):
+    basenames = []
+    for p in list(pathlist):
+        basenames.append(ntpath.basename(p))
+    return basenames
+def generate_plots(fpath_fname_platform):
+    '''
+    fpath_fname_platform = [[fpathlist1,fnamelist1,platform1],...]
+    fpathlist1 = ['pdir','fdir']
+    fnamelist1 = [fname1, fname2, fname3, ...]
+    platform1 = platformname
+    '''
+    for f in fpath_fname_platform:
+        fpath,fnames,platform = f
+        for fn in fnames:
+            fps_plot(fpath,fn,platform=platform)
