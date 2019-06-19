@@ -64,8 +64,9 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
     gtfiles = glob(gtfolder + '/*.txt')
     segmentsDF = generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder)
     
-    for gtfile in gtfiles:
+    for fidx,gtfile in enumerate(gtfiles):
         frameName = ntpath.basename(gtfile)
+        print(fidx,frameName)
         detfile = detfolder + '/' + frameName
         detDF = pd.read_csv(detfile, sep=' ', names=['class','conf','left','top','right','bottom'], engine='python')
         detDF['xcentre'] = (detDF.right + detDF.left) / 2.0
@@ -74,9 +75,9 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
         gtDF = pd.read_csv(gtfile, sep=' ', names=['class','left','top','right','bottom'], engine='python')
         gtDF['xcentre'] = (gtDF.right + gtDF.left) / 2.0
         gtDF['ycentre'] = (gtDF.bottom + gtDF.top) / 2.0
-        for i,gtData in gtDF.iterrows():
-            for j,segmentData in segmentsDF.iterrows():
-                with open(gtfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as gt:
+        for j,segmentData in segmentsDF.iterrows():
+            with open(gtfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as gt:
+                for i,gtData in gtDF.iterrows():
                     if segmentData.left <= gtData.xcentre and segmentData.top <= gtData.ycentre and \
                         segmentData.right > gtData.xcentre and segmentData.bottom > gtData.ycentre:
                             gt.write('{} {} {} {} {}\n'.format(gtData['class'],gtData.left,gtData.top,gtData.right,gtData.bottom))
