@@ -11,7 +11,8 @@ import ntpath
 import pandas as pd
 import numpy as np
 import shutil
-
+from boundingBoxDrawer import drawBoxes
+from IPython import display
 
 parser = argparse.ArgumentParser(description='divide bounding boxes into different \
                                  segments based on segment ground truth falls into')
@@ -32,7 +33,7 @@ frameWidth = 960
 frameHeight = 540
 nrows = 3
 ncols = 4
-dthreshold = 50
+dthreshold = 20
 
 def generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder):
     yPoints = np.linspace(start=0,stop=frameHeight,num=nrows,dtype=np.int,endpoint=True)
@@ -83,6 +84,7 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
         gtDF = read_detections(gtfile, ['class','left','top','right','bottom'])
         maxDetcxy = 'nan'
         for j,segmentData in segmentsDF.iterrows():
+            FP = False
             with open(gtfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as gt:
                 with open(detfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as det:
                     for i,gtData in gtDF.iterrows():
@@ -146,8 +148,10 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
 #                                        print(segmentData)
 #                                        print(gtData)
 #                                        input('>')
-                                        print(frameName + ': {} {} {} {} {} {}'.format(nearestDet['class'],nearestDet.conf,nearestDet.left,nearestDet.top,nearestDet.right,nearestDet.bottom),gtData,gtData2)
+#                                        print(frameName + ': {} {} {} {} {} {}'.format(nearestDet['class'],nearestDet.conf,nearestDet.left,nearestDet.top,nearestDet.right,nearestDet.bottom))
+                                        FP = True
                                         det.write('{} {} {} {} {} {}\n'.format(nearestDet['class'],nearestDet.conf,nearestDet.left,nearestDet.top,nearestDet.right,nearestDet.bottom))
+                                        
                                     
                                         
                                         
@@ -165,6 +169,12 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
                                             
                                             if maxDetcxy[1] < abs(nearestDet.ycentre - gtData.ycentre):
                                                 maxDetcxy[1] = abs(nearestDet.ycentre - gtData.ycentre)
+            if FP:
+                print(fidx,frameName,maxDetcxy)
+                gtfile = gtfolder + '/' + segmentData.foldername + '/' + frameName
+                detfile = detfolder + '/' + segmentData.foldername + '/' + frameName
+                drawBoxes(gtfile,detfile,(0,0,960,540))
+                input('>')
         if maxDetcxy != 'nan' and (maxDetcxy[0] > dthreshold or maxDetcxy[1] > dthreshold):
             print(fidx,frameName,maxDetcxy)
             print()
