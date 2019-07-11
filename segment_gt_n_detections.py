@@ -33,11 +33,11 @@ frameWidth = 960
 frameHeight = 540
 nrows = 3
 ncols = 4
-dthreshold = 20
+dthreshold = 10
 
 def generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder):
-    yPoints = np.linspace(start=0,stop=frameHeight,num=nrows,dtype=np.int,endpoint=True)
-    xPoints = np.linspace(start=0,stop=frameWidth,num=ncols,dtype=np.int,endpoint=True)
+    yPoints = np.linspace(start=0,stop=frameHeight,num=nrows+1,dtype=np.int,endpoint=True)
+    xPoints = np.linspace(start=0,stop=frameWidth,num=ncols+1,dtype=np.int,endpoint=True)
     #create segments from img
     leftTop_rightBottom = []
     for y in range(len(yPoints) - 1):
