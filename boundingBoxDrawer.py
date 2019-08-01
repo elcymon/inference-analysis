@@ -38,17 +38,18 @@ def drawBoxes(gtFile,detFile,imgSize):
     '''
     gtDF = read_detections(gtFile,['class','left','top','right','bottom'])
     detDF = read_detections(detFile,['class','conf','left','top','right','bottom'])
-    print('ground truth')
-    print(gtDF)
-    print('detection')
-    print(detDF)
+    
     
     fig,ax = plt.subplots()
 #    print("gtfile: " + gtFile)
 #    print(os.sep.split(gtFile))
     gtSegment = extractSegment(gtFile.split(os.sep)[-2])
     detSegment = extractSegment(detFile.split(os.sep)[-2])
-    
+    print('image size',imgSize)
+    print('ground truths: ',gtDF.shape[0], 'in segment',gtSegment)
+#    print(gtDF)
+    print('detection: ',detDF.shape[0],'in segement ',detSegment)
+#    print(detDF)
     frameNo = detFile.split(os.sep)[-1]
     frameNo = frameNo[:-4]
     
@@ -73,9 +74,9 @@ def drawBoxes(gtFile,detFile,imgSize):
                                      edgecolor='g',facecolor='none',label='detSegment')
         ax.add_patch(rect)
     
-    print(gtSegment)
-    print(detSegment)
-    print(imgSize)
+#    print(gtSegment)
+#    print(detSegment)
+#    print(imgSize)
     for i,r in gtDF.iterrows():
         if i == 0:
             rect = mpl.patches.Rectangle((r.left,r.top),\

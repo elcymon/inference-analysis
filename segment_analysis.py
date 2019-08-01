@@ -3,7 +3,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-dname = '20190111GOPR9027half-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128-seg3r4c'
+dname = '20190111GOPR9027half-mobilenetSSD-10000-th0p5-nms0p0-iSz124-nosegment/0_0-960_540/9r16c'#'20190111GOPR9027half-mobilenetSSD-10000-th0p5-nms0p0-iSz124-seg3r4c'#'20190111GOPR9027half-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128-seg3r4c'
 fname='../darknet/videos/' + dname + '/segmentsMAP.csv'
 
 df = pd.read_csv(fname,sep=',|_|-',engine='python',names=['left','top','right','bottom','mAP'])
@@ -25,7 +25,7 @@ for index,row in df.iterrows():
     mAP = round(row.mAP,2)
     heatData.loc[tb,lr] = mAP
 
-f = plt.figure(figsize=(4,3))#)figsize=(17,6)
+f = plt.figure(figsize=(16,9))#)figsize=(17,6)
     
 ax = sns.heatmap(heatData.astype(float),annot=True,vmin=0,vmax=1,cmap='magma')
 ax.xaxis.set_ticks_position('top')
