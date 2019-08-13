@@ -1,0 +1,1 @@
+python segment_gt_n_detections.py --network=../videos/litter-recording/*-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz* --frameWidth=960 --frameHeight=540 --nrows=3 --ncols=4 --groundTruth=0
