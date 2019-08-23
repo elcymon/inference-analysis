@@ -38,9 +38,10 @@ def processArguments(args):
     segmentsDF = generateSegments(nrows,ncols,frameHeight,frameWidth)
 
     for i,df in enumerate(detfolders):#go through list of detection folders that match pattern
+        #if i == 72:
         segment_gt_n_detections(df,detSubfolder,frameWidth,frameHeight,segmentsDF,groundTruth=groundTruth)
-        
-        #save number of detections for each segment in csv file
+            
+            #save number of detections for each segment in csv file
         count_detections.save_counts(os.sep.join([df,detSubfolder,'{}r{}c'.format(nrows,ncols)]))
         print('{}/{}: {}'.format(i+1,len(detfolders),ntpath.basename(df)))
         # print('{}/{}: {}, frames = {}'.format(

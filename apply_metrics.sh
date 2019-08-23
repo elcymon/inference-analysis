@@ -1,12 +1,32 @@
 #cd ../darknet/videos/20190111GOPR9027half-mobilenetSSD-10000-th0p7-nms0p0-iSz216
-vsegments=3r4c
-groundtruth=20190111GOPR9027/20190111GOPR9027half-hflip/20190111GOPR9027half-hflip-yolov3-litter_10000-th0p0-nms0p0-iSz608/0_0-960_540/$vsegments #20190111GOPR9027-yolov3-litter_10000-th0p1-nms0p0-iSz608-seg3r4c #20190111GOPR9027-yolov3-litter_10000-th0p1-nms0p0-iSz608-seg3r4c #20190111GOPR9027-yolov3-litter_10000-th0p1-nms0p0-iSz608-seg18r32c #
-detections=20190111GOPR9027/20190111GOPR9027half-hflip/20190111GOPR9027half-hflip-mobilenetSSD-10000-th0p5-nms0p0-iSz124/0_0-960_540/$vsegments #20190111GOPR9027half-mobilenetSSD-10000-th0p5-nms0p0-iSz124-seg3r4c #20190111GOPR9027half-mobilenetSSD-10000-th0p5-nms0p0-iSz220-seg3r4c #20190111GOPR9027half-mobilenetSSD-10000-th0p7-nms0p0-iSz216-seg18r32c-filter-large-box # 20190111GOPR9027half-mobilenetSSD-10000-th0p7-nms0p0-iSz216-seg18r32c #20190111GOPR9027half-yolov3-tiny-litter_10000_216-th0p1-nms0p0-iSz216-seg18r32c #20190111GOPR9027half-mobilenetSSD-10000-th0p7-nms0p0-iSz216-seg3r4c #20190111GOPR9027half-yolov3-tiny-litter_10000_216-th0p1-nms0p0-iSz216-seg3r4c #
-videosPath=/home/elcymon/litter-detection/darknet/videos
-cd ../Object-Detection-Metrics
+segments=$1
+groundtruth=yolov3-litter_10000-th0p0-nms0p0-iSz608/0_0-960_540/$segments
+yoloTiny=yolov3-tiny*/0_0-960_540/$segments
+mobilenetSSD=mobilenetSSD*/0_0-960_540/$segments
+videosPath=../videos/litter-recording
+cd Object-Detection-Metrics
 
-for d in $(cd $videosPath/$detections; ls -d *_*-*_*); do
-    echo "$d"
-    python3.7 pascalvoc.py -gt $videosPath/$groundtruth/$d/ -det $videosPath/$detections/$d/ -t 0.01 -gtformat xyrb -detformat xyrb -sp $videosPath/$detections/$d/analysis/ -np
+for d in $(cd $videosPath; ls *.MP4); do
+    echo ${d/.MP4/}
+    gtAll=${d/.MP4/}-$groundtruth
+    echo "groundTruth: "$gtAll
+    for seg in $(cd $videosPath/$gtAll; ls -d ./*/); do
+        echo $seg
+        echo "YOLO-Tiny"
+        for det in $(cd $videosPath; ls -d ${d/.MP4/}-$yoloTiny); do
+            #echo "gt: "$videosPath/$gtAll/$seg", det: "$videosPath/$det/$seg
+            python3.7 pascalvoc.py -gt $videosPath/$gtAll/$seg -det $videosPath/$det/$seg -t 0.0001 -gtformat xyrb -detformat xyrb -sp $videosPath/$det/$seg/analysis/ -np
+        done
+        echo "MobilenetSSD"
+        for det in $(cd $videosPath; ls -d ${d/.MP4/}-$mobilenetSSD); do
+            #echo $videosPath/$det
+            python3.7 pascalvoc.py -gt $videosPath/$gtAll/$seg -det $videosPath/$det/$seg -t 0.0001 -gtformat xyrb -detformat xyrb -sp $videosPath/$det/$seg/analysis/ -np
+        done
+        #break
+    done
+
+    
+    #break
+    #python3.7 pascalvoc.py -gt $videosPath/$groundtruth/$d/ -det $videosPath/$detections/$d/ -t 0.0001 -gtformat xyrb -detformat xyrb -sp $videosPath/$detections/$d/analysis/ -np
 done
 #

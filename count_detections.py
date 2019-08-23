@@ -11,7 +11,7 @@ def count_lines(filesPath):
     
     return count
 def save_counts(path):
-    detectionFolders = glob(path + '/*_*-*_*')
+    detectionFolders = glob(os.sep.join([path, '*_*-*_*']))
     vidName = [i for i in path.split(os.sep) if 'GOPR' in i][0]
     # print(detectionFolders)
     # print(vidName)
@@ -28,4 +28,6 @@ if __name__ == "__main__":
     parser.add_argument('--path', help='Path to txt files')
 
     args = parser.parse_args()
-    save_counts(args.path)        
+    for i,p in enumerate(glob(args.path)):
+        print(f'{i+1}/{len(glob(args.path))}: {p}')
+        save_counts(p)        
