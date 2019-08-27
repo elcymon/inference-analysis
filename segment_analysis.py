@@ -89,10 +89,13 @@ def analyseVideos(resultsFolder, networkPattern, nRowsmCols='', csvFile='segment
     detectionsCSV = os.sep.join([resultsFolder,summaryCSV])
     allData.to_csv(detectionsCSV)
 
-analyseVideos('../videos/litter-recording',
-                '*-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128',nRowsmCols='3r4c',
-                csvFile='segmentsMAP.csv',oneVideo=True)
+resultsFolder = '../videos/litter-recording'
+networkPattern = '*-yolov3-litter_10000-th0p0-nms0p0-iSz608'
+nRowsmCols='5r9c'
+oneVideo=True
 
-analyseVideos('../videos/litter-recording',
-                '*-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128',nRowsmCols='3r4c',
-                csvFile='detectionCounts.csv',oneVideo=True)
+#analyseVideos(resultsFolder, networkPattern ,nRowsmCols=nRowsmCols,
+#                csvFile='segmentsMAP.csv',oneVideo=oneVideo)
+
+analyseVideos(resultsFolder, networkPattern ,nRowsmCols=nRowsmCols,
+                csvFile='detectionCounts.csv',oneVideo=oneVideo)
