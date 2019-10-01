@@ -26,16 +26,19 @@ parser.add_argument('--ncols', help='Number segments along width')
 parser.add_argument('--dthreshold',help='Threshold for pixel distance between centres')
 
 args = parser.parse_args()
-pfolder = '/home/elcymon/litter-detection/darknet/videos/20190111GOPR9027half'
-gtfolder = pfolder + '20190111GOPR9027half-yolov3-litter_10000-th0p1-nms0p0-iSz608-nosegment'
-detfolder = pfolder + '20190111GOPR9027half-mobilenetSSD-10000-th0p5-nms0p0-iSz124-nosegment/0_0-960_540'#'20190111GOPR9027half-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128-nosegment/0_0-960_540'
+pfolder = '/home/elcymon/litter-detection/darknet/videos/20190111GOPR9027/20190111GOPR9027half-hflip/'
+gtfolder = pfolder + '20190111GOPR9027half-hflip-yolov3-litter_10000-th0p0-nms0p0-iSz608/0_0-960_540'
+detfolders = ['20190111GOPR9027half-hflip-mobilenetSSD-10000-th0p5-nms0p0-iSz124/0_0-960_540',\
+              '20190111GOPR9027half-hflip-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128/0_0-960_540',\
+              '20190111GOPR9027half-hflip-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz224/0_0-960_540',\
+              '20190111GOPR9027half-hflip-mobilenetSSD-10000-th0p5-nms0p0-iSz220/0_0-960_540']#'20190111GOPR9027half-yolov3-tiny-litter_10000-th0p0-nms0p0-iSz128-nosegment/0_0-960_540'
 frameWidth = 960
 frameHeight = 540
-nrows = 6
-ncols = 10
+nrows = 3
+ncols = 4
 dthreshold = 20
 
-def generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder):
+def generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,pfolder,detfolders):
     yPoints = np.linspace(start=0,stop=frameHeight,num=nrows+1,dtype=np.int,endpoint=True)
     xPoints = np.linspace(start=0,stop=frameWidth,num=ncols+1,dtype=np.int,endpoint=True)
     #create segments from img
@@ -49,11 +52,12 @@ def generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder):
             os.makedirs(os.sep.join([gtfolder,segmentFolder,'analysis']), exist_ok=True)
 #            os.mkdir(gtfolder + '/' + segmentFolder)
 #            os.mkdir(gtfolder + '/' + segmentFolder + '/analysis')
-            
-            if os.path.exists(detfolder + '/' + segmentFolder):
-                shutil.rmtree(detfolder + '/' + segmentFolder)
+            for detfolder in detfolders:
+                detfolder = pfolder + detfolder
+                if os.path.exists(detfolder + '/' + segmentFolder):
+                    shutil.rmtree(detfolder + '/' + segmentFolder)
                 
-            os.makedirs(os.sep.join([detfolder,segmentFolder,'analysis']), exist_ok=True)
+                os.makedirs(os.sep.join([detfolder,segmentFolder,'analysis']), exist_ok=True)
 #            os.mkdir(detfolder + '/' + segmentFolder)
 #            os.mkdir(detfolder + '/' + segmentFolder + '/analysis')
             
@@ -71,51 +75,68 @@ def read_detections(fname,cols):
     df['xcentre'] = (df.right + df.left) / 2.0
     df['ycentre'] = (df.bottom + df.top) / 2.0
     return df
-def writeSegmentData(segmentData,detections,detectionsList,folderName,frameName):
+def writeSegmentData(folderName,segmentData,frameName,detections,detectionsList,groundTruth=False):
+    writtenDetections = []
+#    print(folderName,segmentData.foldername,frameName)
+    
     with open(folderName + '/' + segmentData.foldername + '/' + frameName, 'a+') as detFile:
         for i,detData in detections.iterrows():
             if segmentData.left <= detData.xcentre and segmentData.top <= detData.ycentre and \
                 segmentData.right > detData.xcentre and segmentData.bottom > detData.ycentre:
-                detStr = '{} {} {} {} {} {}\n'.format(detData['class'],detData.conf,detData.left,detData.top,detData.right,detData.bottom)
+                if groundTruth:
+                    detStr = '{} {} {} {} {}\n'.format(detData['class'],detData.left,detData.top,detData.right,detData.bottom)    
+                else:
+                    detStr = '{} {} {} {} {} {}\n'.format(detData['class'],detData.conf,detData.left,detData.top,detData.right,detData.bottom)
                 if detStr not in detectionsList:#check if current detections have not been written in a file for this frame
                     detFile.write(detStr)
-                    detectionsList.append(detStr)
-    return detectionsList
+                    writtenDetections.append(detStr)
+    return writtenDetections
     
-def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nrows,ncols,dthreshold):
+def segment_gt_n_detections(pfolder,gtfolder,detfolders,frameWidth,frameHeight,nrows,ncols,dthreshold):
     gtfiles = glob(gtfolder + '/*.txt')
-    segmentsDF = generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder)
+    segmentsDF = generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,pfolder,detfolders)
     
     for fidx,gtfile in enumerate(gtfiles):
         frameName = ntpath.basename(gtfile)
-        detfile = detfolder + '/' + frameName
-        detDF = read_detections(detfile,['class','conf','left','top','right','bottom'])
+        detectionsDict = {}
+        for det in detfolders:
+            detfolder = pfolder + det
+            detfile = detfolder + '/' + frameName
+            detList = [] #all detections in current frame
+            
+            detDF = read_detections(detfile,['class','conf','left','top','right','bottom'])
+            detectionsDict[det] = {'detfolder':detfolder,'detDF':detDF,'detList':detList}
         
         gtDF = read_detections(gtfile, ['class','left','top','right','bottom'])
         gtList = [] #all ground truths in the current frame
-        detList = [] #all detections in current frame
         
         for j,segmentData in segmentsDF.iterrows():
-            writeSegmentData(segmentData,detDF,detfolder,frameName,detList)
-            FP = False
-            with open(gtfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as gt:
-                with open(detfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as det:
-                    for i,gtData in gtDF.iterrows():
-                        if segmentData.left <= gtData.xcentre and segmentData.top <= gtData.ycentre and \
-                            segmentData.right > gtData.xcentre and segmentData.bottom > gtData.ycentre:
-                            gtStr = '{} {} {} {} {}\n'.format(gtData['class'],gtData.left,gtData.top,gtData.right,gtData.bottom)
-                            if gtStr not in gtList:#check if current ground truth has not been written in a file for this frame
-                                gt.write(gtStr)
-                                gtList.append(gtStr)
-                    
-                    #insert detections based on its centre
-                    for k,detData in detDF.iterrows():
-                        if segmentData.left <= detData.xcentre and segmentData.top <= detData.ycentre and \
-                            segmentData.right > detData.xcentre and segmentData.bottom > detData.ycentre:
-                            detStr = '{} {} {} {} {} {}\n'.format(detData['class'],detData.conf,detData.left,detData.top,detData.right,detData.bottom)
-                            if detStr not in detList:#check if current detections have not been written in a file for this frame
-                                det.write(detStr)
-                                detList.append(detStr)
+            for det in detectionsDict.keys():
+                detInfo = detectionsDict[det]
+                detectionsDict[det]['detList'] = detInfo['detList'] + \
+                    writeSegmentData(detInfo['detfolder'],segmentData,frameName,detInfo['detDF'],detInfo['detList'])
+                
+            gtList = gtList + writeSegmentData(gtfolder,segmentData,frameName,gtDF,gtList,groundTruth=True)
+            
+#            FP = False
+#            with open(gtfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as gt:
+#                with open(detfolder + '/' + segmentData.foldername + '/' + frameName,'a+') as det:
+#                    for i,gtData in gtDF.iterrows():
+#                        if segmentData.left <= gtData.xcentre and segmentData.top <= gtData.ycentre and \
+#                            segmentData.right > gtData.xcentre and segmentData.bottom > gtData.ycentre:
+#                            gtStr = '{} {} {} {} {}\n'.format(gtData['class'],gtData.left,gtData.top,gtData.right,gtData.bottom)
+#                            if gtStr not in gtList:#check if current ground truth has not been written in a file for this frame
+#                                gt.write(gtStr)
+#                                gtList.append(gtStr)
+#                    
+#                    #insert detections based on its centre
+#                    for k,detData in detDF.iterrows():
+#                        if segmentData.left <= detData.xcentre and segmentData.top <= detData.ycentre and \
+#                            segmentData.right > detData.xcentre and segmentData.bottom > detData.ycentre:
+#                            detStr = '{} {} {} {} {} {}\n'.format(detData['class'],detData.conf,detData.left,detData.top,detData.right,detData.bottom)
+#                            if detStr not in detList:#check if current detections have not been written in a file for this frame
+#                                det.write(detStr)
+#                                detList.append(detStr)
 #                            
 #                            nearestDet = ''
 #                            
@@ -221,4 +242,4 @@ def segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nr
 #    return gtfiles
 #segmentsDF = generateSegments(nrows,ncols,frameHeight,frameWidth,gtfolder,detfolder)
 #gtDF,detDF,gtfiles= \
-segment_gt_n_detections(pfolder,gtfolder,detfolder,frameWidth,frameHeight,nrows,ncols,dthreshold)
+segment_gt_n_detections(pfolder,gtfolder,detfolders,frameWidth,frameHeight,nrows,ncols,dthreshold)
