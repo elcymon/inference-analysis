@@ -83,7 +83,7 @@ def analyseVideos(resultsFolder, networkPattern, nRowsmCols='', csvFile='segment
     
     if csvFile == 'segmentsMAP.csv':
         allData /= len(networkFolders)
-    summaryCSV += '-'.join([nRowsmCols,csvFile])
+    summaryCSV =summaryCSV + '-' + '-'.join([nRowsmCols,csvFile])
     
     # print(len(networkFolders))
     detectionsCSV = os.sep.join([resultsFolder,summaryCSV])
@@ -91,7 +91,7 @@ def analyseVideos(resultsFolder, networkPattern, nRowsmCols='', csvFile='segment
 
 resultsFolder = '../videos/litter-recording'
 networkPattern = '*-yolov3-litter_10000-th0p0-nms0p0-iSz608'
-nRowsmCols='5r9c'
+nRowsmCols=''
 oneVideo=True
 
 #analyseVideos(resultsFolder, networkPattern ,nRowsmCols=nRowsmCols,

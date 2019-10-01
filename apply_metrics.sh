@@ -37,29 +37,31 @@ pascalvoc(){
     python3.7 pascalvoc.py -gt $gtPath -det $detPath -t 0.0001 -gtformat xyrb -detformat xyrb -sp $detPath/analysis/ -np
 }
 
-gt=yolov3-litter_10000-th0p0-nms0p0-iSz608
-mobilenetSSD=mobilenetSSD-10000-th0p5-nms0p0-iSz*
-yoloTiny=yolov3-tiny-litter_10000-th0p0-nms0p0-iSz*
-for seg in $(cd $videosPath/$gt; ls -d */); do
-    echo $seg
-    if [ "$seg" == "1r1c/" ]; then
-        for det in $(cd $videosPath; ls -d $yoloTiny); do
-            pascalvoc $videosPath/$gt/$seg $videosPath/$det/$seg
-        done
+time pascalvoc $videosPath/GOPR9027-yolov3-608 $videosPath/GOPR9027-mobilenet-124
+
+# gt=yolov3-litter_10000-th0p0-nms0p0-iSz608
+# mobilenetSSD=mobilenetSSD-10000-th0p5-nms0p0-iSz*
+# yoloTiny=yolov3-tiny-litter_10000-th0p0-nms0p0-iSz*
+# for seg in $(cd $videosPath/$gt; ls -d */); do
+#     echo $seg
+#     if [ "$seg" == "1r1c/" ]; then
+#         for det in $(cd $videosPath; ls -d $yoloTiny); do
+#             pascalvoc $videosPath/$gt/$seg $videosPath/$det/$seg
+#         done
         
-        for det in $(cd $videosPath; ls -d $mobilenetSSD); do
-            pascalvoc $videosPath/$gt/$seg $videosPath/$det/$seg
-        done    
-    else
-        # echo "h"
-        for subseg in $(cd $videosPath/$gt/$seg; ls -d *_*-*_*/); do
-            for det in $(cd $videosPath; ls -d $yoloTiny); do
-                pascalvoc $videosPath/$gt/$seg$subseg $videosPath/$det/$seg$subseg
-            done
+#         for det in $(cd $videosPath; ls -d $mobilenetSSD); do
+#             pascalvoc $videosPath/$gt/$seg $videosPath/$det/$seg
+#         done    
+#     else
+#         # echo "h"
+#         for subseg in $(cd $videosPath/$gt/$seg; ls -d *_*-*_*/); do
+#             for det in $(cd $videosPath; ls -d $yoloTiny); do
+#                 pascalvoc $videosPath/$gt/$seg$subseg $videosPath/$det/$seg$subseg
+#             done
             
-            for det in $(cd $videosPath; ls -d $mobilenetSSD); do
-                pascalvoc $videosPath/$gt/$seg$subseg $videosPath/$det/$seg$subseg
-            done
-        done
-    fi
-done
+#             for det in $(cd $videosPath; ls -d $mobilenetSSD); do
+#                 pascalvoc $videosPath/$gt/$seg$subseg $videosPath/$det/$seg$subseg
+#             done
+#         done
+#     fi
+# done
