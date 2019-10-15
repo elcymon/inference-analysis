@@ -33,11 +33,13 @@ cd ../Object-Detection-Metrics
 pascalvoc(){
     gtPath=$1
     detPath=$2
+    sp=$detPath/analysis
+    mkdir -p $sp
     echo "gt: "$gtPath", det: "$detPath
-    python3.7 pascalvoc.py -gt $gtPath -det $detPath -t 0.0001 -gtformat xyrb -detformat xyrb -sp $detPath/analysis/ -np
+    python3.7 pascalvoc.py -gt $gtPath -det $detPath -t 0.0001 -gtformat xyrb -detformat xyrb -sp $sp/ -np
 }
 
-time pascalvoc $videosPath/GOPR9027-yolov3-608 $videosPath/GOPR9027-mobilenet-124
+time pascalvoc $videosPath/GOPR9027-yolov3-608/1r1c $videosPath/GOPR9027-yolov3-tiny-224/1r1c
 
 # gt=yolov3-litter_10000-th0p0-nms0p0-iSz608
 # mobilenetSSD=mobilenetSSD-10000-th0p5-nms0p0-iSz*
